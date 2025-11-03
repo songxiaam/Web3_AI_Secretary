@@ -1,0 +1,955 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>从 0 到 1：构建你的 1人 Agent 团队</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --slide-bg-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #4CAF50; /* A vibrant green for tech theme */
+            --secondary-color: #03A9F4; /* A bright blue for highlights */
+            --heading-font: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            --body-font: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            --code-font: 'Fira Code', 'Consolas', 'Monaco', monospace;
+            --border-color: #444;
+        }
+
+        body {
+            font-family: var(--body-font);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .presentation-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            max-height: 750px;
+            aspect-ratio: 16 / 10;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            background: var(--bg-color);
+        }
+
+        .slide {
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: var(--slide-bg-color);
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 1;
+        }
+
+        .slide.cover {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .slide h1 {
+            font-family: var(--heading-font);
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .slide h2 {
+            font-family: var(--heading-font);
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+        
+        .slide .section-title h2 {
+            font-size: 4rem;
+            text-align: center;
+            border-bottom: none;
+            color: var(--text-color);
+        }
+        .slide .section-title p {
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .slide .subtitle {
+            font-size: 1.8rem;
+            color: var(--text-color);
+            margin-top: 20px;
+            font-weight: 300;
+        }
+
+        .slide .bottom-info {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.1rem;
+            color: #aaa;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-left: 35px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .keyword-box {
+            background-color: rgba(3, 169, 244, 0.1);
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px 20px;
+            margin-top: 30px;
+            border-radius: 4px;
+        }
+
+        .keyword-box p {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #b3e5fc;
+        }
+        
+        .summary-box {
+            background-color: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-box blockquote {
+            font-size: 1.6rem;
+            color: #c8e6c9;
+            margin: 0;
+            font-style: italic;
+            font-weight: bold;
+        }
+        .summary-box blockquote span {
+            font-size: 1.2rem;
+            font-style: normal;
+            font-weight: normal;
+            color: var(--text-color);
+            display: block;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 1.1rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #2a2a2a;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        tr:nth-child(even) {
+            background-color: #242424;
+        }
+        
+        .highlight-row {
+            background-color: rgba(76, 175, 80, 0.2) !important;
+            font-weight: bold;
+        }
+        
+        .highlight-row td:first-child::before {
+            content: '🌟 ';
+            color: #FFD700;
+        }
+
+        pre {
+            background-color: #111;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: var(--code-font);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border: 1px solid var(--border-color);
+            white-space: pre;
+        }
+
+        code {
+            font-family: var(--code-font);
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        .two-column-layout {
+            display: flex;
+            gap: 40px;
+            width: 100%;
+            height: calc(100% - 100px);
+        }
+        .two-column-layout > div {
+            flex: 1;
+        }
+        .two-column-layout h3 {
+            color: var(--secondary-color);
+            font-size: 1.6rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 5px;
+        }
+        .two-column-layout ul li {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        .two-column-layout .pro li::before { content: '🟢'; }
+        .two-column-layout .con li::before { content: '🔴'; }
+
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: var(--code-font);
+        }
+        .flow-box {
+            background: #2c3e50;
+            border: 1px solid var(--secondary-color);
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 10px 0;
+            min-width: 200px;
+        }
+        .flow-arrow {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+        .flow-box-group {
+            border: 2px dashed var(--secondary-color);
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        .flow-box-group .flow-box {
+            margin: 0;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .nav-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        #slide-counter {
+            color: #aaa;
+            font-size: 1rem;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        .final-quote {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+        }
+        .final-quote blockquote {
+            font-size: 2.8rem;
+            line-height: 1.5;
+            color: var(--text-color);
+            border-left: 5px solid var(--primary-color);
+            padding-left: 30px;
+            margin: 0;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .presentation-container {
+                width: 100%;
+                height: 100%;
+                max-height: none;
+                aspect-ratio: unset;
+            }
+            .slide {
+                padding: 20px;
+            }
+            .slide h1 { font-size: 2.5rem; }
+            .slide h2 { font-size: 1.8rem; }
+            .slide .section-title h2 { font-size: 2.8rem; }
+            li { font-size: 1.1rem; padding-left: 25px; }
+            table { font-size: 0.9rem; }
+            th, td { padding: 8px; }
+            .two-column-layout { flex-direction: column; gap: 20px; }
+            .final-quote blockquote { font-size: 1.8rem; }
+            pre { font-size: 0.8rem; padding: 10px; }
+        }
+    </style>
+<script src="https://puc.poecdn.net/authenticated_preview_page/syncedState.3f7572448765332f3047.js"></script></head>
+<body>
+
+    <div class="presentation-container">
+        
+        <!-- Slide 1: Cover Page -->
+        <div class="slide cover active">
+            <h1>从 0 到 1：构建你的 1人 Agent 团队</h1>
+            <p class="subtitle">以 Web3 AI 助理项目为例，讲述 AI 共创的实战路径</p>
+            <div class="bottom-info">
+                <span>分享人：赵立明</span> | <span>时间：2025 年 11 月</span>
+            </div>
+        </div>
+        
+        <!-- Slide 2: Agenda -->
+        <div class="slide">
+            <h2>分享大纲</h2>
+            <ul>
+                <li><strong>WHY：为什么要构建 1人 Agent 团队</strong><br>探讨背景趋势、传统痛点与“1人团队”新模式的机遇。</li>
+                <li><strong>WHAT：多 Agent 系统做成什么样子</strong><br>展示多 Agent 的落地场景，并深入剖析我们的实战案例。</li>
+                <li><strong>HOW：怎么从 0 到 1 构建 MVP</strong><br>分享使用 AI 共创产品、设计方案并最终落地的完整路径。</li>
+                <li><strong>总结与展望</strong><br>回顾核心收获，思考 AI 协作的未来。</li>
+            </ul>
+        </div>
+
+        <!-- Section 1 Title -->
+        <div class="slide section-title" style="justify-content: center;">
+            <h2>一、为什么要构建 1人 Agent 团队</h2>
+            <p>趋势 · 痛点 · 机会</p>
+        </div>
+
+        <!-- Slide 3: 1.1 Background & Trends -->
+        <div class="slide">
+            <h2>1.1 背景与趋势：AI 进入“协作”时代</h2>
+            <ul>
+                <li>AI 正在从单一的「工具」进化为可协同工作的「伙伴」。</li>
+                <li>AutoGen, LangGraph, CrewAI 等框架正在重塑软件开发与工作流模式。</li>
+                <li>未来的核心生产力单位将是「人类指挥官 + 多智能体执行系统」。</li>
+                <li>这种新范式让一个人能够调动一支“虚拟团队”，完成过去需要多人协作的复杂任务。</li>
+            </ul>
+            <div class="keyword-box">
+                <p>📌 <strong>关键词：</strong> 智能体协作 / 角色分工 / 自主推理 / 自动化决策</p>
+            </div>
+        </div>
+
+        <!-- Slide 4: 1.2 Traditional Development Limitations -->
+        <div class="slide">
+            <h2>1.2 传统开发的局限性</h2>
+            <p>不同开发模式都存在各自的瓶颈，多 Agent 系统旨在取长补短。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>模式</th>
+                        <th>优点</th>
+                        <th>局限</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>单人开发</td>
+                        <td>快速灵活，沟通成本低</td>
+                        <td>知识面和技能栈有限，难以覆盖所有职能</td>
+                    </tr>
+                    <tr>
+                        <td>团队协作</td>
+                        <td>多角度思考，专业分工</td>
+                        <td>人力成本高，沟通协调复杂，流程冗长</td>
+                    </tr>
+                    <tr>
+                        <td>单 Agent (ChatGPT 类)</td>
+                        <td>快速生成内容和代码片段</td>
+                        <td>缺乏上下文记忆，无法进行持续、多步骤的协作</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>多 Agent 系统</strong></td>
+                        <td><strong>多角色、可协作、自动化</strong></td>
+                        <td><strong>可持续执行任务、知识增强、模拟真实团队</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Slide 5: 1.3 Why "1-Person Team" -->
+        <div class="slide">
+            <h2>1.3 为什么是“1人团队”？</h2>
+            <ul>
+                <li><strong>用 AI 模拟多角色分工：</strong> 你可以定义分析师、研究员、策略师、开发者等不同角色，各司其职。</li>
+                <li><strong>你是“指挥官”，AI 是“执行团队”：</strong> 你负责设定目标、规划方向和最终决策，AI 负责具体的执行、分析和产出。</li>
+                <li><strong>极低的成本和极高的效率：</strong> 省去了高昂的人力成本和复杂的沟通成本，实现 24/7 不间断工作。</li>
+                <li><strong>可持续迭代和优化：</strong> 可以随时调整 AI Agent 的角色、技能和工作流程，不断优化团队的整体表现。</li>
+            </ul>
+            <div class="summary-box">
+                <blockquote>
+                    “一个人 + 一群 AI = 一支虚拟团队。”
+                </blockquote>
+            </div>
+        </div>
+        
+        <!-- Section 2 Title -->
+        <div class="slide section-title" style="justify-content: center;">
+            <h2>二、做成什么样子</h2>
+            <p>展示多 Agent 的落地形态与实战案例</p>
+        </div>
+
+        <!-- Slide 6: 2.1 Applicable Scenarios -->
+        <div class="slide">
+            <h2>2.1 可落地的多 Agent 场景</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>场景</th>
+                        <th>核心结构 (Agent 团队)</th>
+                        <th>应用示例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>研究分析系统</strong></td>
+                        <td>DataCollector → Analyst → Strategist</td>
+                        <td>市场投研、竞品分析、行业情报监控</td>
+                    </tr>
+                    <tr>
+                        <td><strong>内容生产系统</strong></td>
+                        <td>Retriever → Writer → Critic</td>
+                        <td>自动化内容营销、自媒体文章生成、报告撰写</td>
+                    </tr>
+                    <tr>
+                        <td><strong>自动化工作流</strong></td>
+                        <td>Planner → Executor → Reviewer</td>
+                        <td>项目管理自动化、增长黑客实验、代码生成与审查</td>
+                    </tr>
+                    <tr>
+                        <td><strong>智能问答系统</strong></td>
+                        <td>UI Agent → FAQ Agent → Escalation Agent</td>
+                        <td>SaaS 智能客服、企业内部知识库、在线教育平台</td>
+                    </tr>
+                    <tr>
+                        <td><strong>AI 协作共创</strong></td>
+                        <td>GroupChat (多角色并行)</td>
+                        <td>产品策划、头脑风暴、剧本创作</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="summary-box">
+                <blockquote>
+                    多 Agent 是一种“通用型团队模式”，几乎可以应用在所有“信息流 + 决策型”任务中。
+                </blockquote>
+            </div>
+        </div>
+
+        <!-- Slide 7: 2.2 Case Study Intro -->
+        <div class="slide" style="justify-content: center; text-align: center;">
+            <h2 style="border: none;">💡 案例：Web3 AI 秘书</h2>
+            <p style="font-size: 2rem; color: var(--primary-color);">一个由 1 人 + 4 个 Agent 协作完成的 MVP</p>
+        </div>
+        
+        <!-- Slide 8: System Architecture -->
+        <div class="slide">
+            <h2>🧩 系统架构图与角色分工</h2>
+            <pre style="font-size: 1rem; line-height: 1.4;">┌─────────────────────────────────────────────────────────────────┐
+│                    Web3 AI 秘书多Agent系统                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐         │
+│  │  UI Agent   │    │  DC Agent   │    │Analyst Agent│         │
+│  │ 用户界面代理  │    │ 数据收集代理  │    │  分析师代理   │         │
+│  └─────────────┘    └─────────────┘    └─────────────┘         │
+│         │                   │                   │              │
+│         └───────────────────┼───────────────────┘              │
+│                             │                                  │
+│                    ┌─────────────┐                            │
+│                    │Strategist   │                            │
+│                    │   Agent     │                            │
+│                    │ 战略分析师代理 │                            │
+│                    └─────────────┘                            │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                    共享工具函数库 (Tools)                        │
+└─────────────────────────────────────────────────────────────────┘
+            </pre>
+            <ul>
+                <li style="font-size: 1.2rem;"><strong>UI Agent:</strong> 前端交互专家，负责理解用户意图、格式化并呈现最终结果。</li>
+                <li style="font-size: 1.2rem;"><strong>DC Agent (Data Collector):</strong> 数据搜集专家，负责爬取新闻、检索 RAG 知识库。</li>
+                <li style="font-size: 1.2rem;"><strong>Analyst Agent:</strong> 数据分析师，负责深度分析、聚合信息、识别市场趋势。</li>
+                <li style="font-size: 1.2rem;"><strong>Strategist Agent:</strong> 策略分析师，负责价值评估、风险识别、生成报告和建议。</li>
+            </ul>
+        </div>
+        
+        <!-- Slide 9: Workflow - Daily Report -->
+        <div class="slide">
+            <h2>🔄 核心流程 1: 每日报告 (定时/手动触发)</h2>
+            <pre>定时触发 (每日一次)
+    │
+    ▼
+┌─────────────┐
+│  DC Agent   │ ◄── 1. 获取24小时内最新Web3新闻
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│Strategist   │ ◄── 2. 对每条新闻进行要点归纳
+│   Agent     │
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│Analyst Agent│ ◄── 3. 聚合高价值新闻，分析市场趋势和关键信息
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│  UI Agent   │ ◄── 4. 整合分析结果，生成结构化日报
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│   数据库     │ ◄── 5. 存储分析结果，并推送给用户
+└─────────────┘
+            </pre>
+        </div>
+        
+        <!-- Slide 10: Workflow - Q&A -->
+        <div class="slide">
+            <h2>🔄 核心流程 2: 问答协作 (用户触发)</h2>
+            <pre>用户提问
+    │
+    ▼
+┌─────────────┐
+│  UI Agent   │ ◄── 1. 接收用户问题，理解并澄清需求
+└─────────────┘
+    │
+    ▼
+┌─────────────────────────────────┐
+│        GroupChat (群聊模式)      │
+│  ┌─────────┐ ┌─────────┐ ┌─────┐ │
+│  │UI Agent │ │DC Agent │ │Analyst│ │
+│  └─────────┘ └─────────┘ └─────┘ │
+└─────────────────────────────────┘
+    │
+    ▼
+┌─────────────┐
+│  DC Agent   │ ◄── 2. 根据问题，搜索相关新闻和内部知识库(RAG)
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│Analyst Agent│ ◄── 3. 基于搜集到的数据进行深度分析和总结
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│  UI Agent   │ ◄── 4. 整合分析结果，生成用户友好的回答
+└─────────────┘
+    │
+    ▼
+   返回最终结果给用户
+            </pre>
+        </div>
+        
+        <!-- Slide 11: Tech Stack -->
+        <div class="slide">
+            <h2>⚙️ 技术栈 (Tech Stack)</h2>
+            <p>我们选择了一套成熟且高效的 Python 技术栈来快速实现 MVP。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>模块</th>
+                        <th>技术选型</th>
+                        <th>作用</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Agent 协作框架</strong></td>
+                        <td>AutoGen</td>
+                        <td>定义 Agent 角色、工作流，并调度多智能体协作</td>
+                    </tr>
+                    <tr>
+                        <td><strong>知识库 (RAG)</strong></td>
+                        <td>LlamaIndex + ChromaDB</td>
+                        <td>构建向量知识库，实现高效的语义检索与问答支持</td>
+                    </tr>
+                    <tr>
+                        <td><strong>前端界面</strong></td>
+                        <td>Streamlit + Babel (i18n)</td>
+                        <td>快速构建数据应用 UI，并实现国际化 (中英文切换)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>数据采集</strong></td>
+                        <td>Requests + BeautifulSoup</td>
+                        <td>定时抓取指定来源的 Web3 新闻</td>
+                    </tr>
+                    <tr>
+                        <td><strong>任务调度</strong></td>
+                        <td>APScheduler</td>
+                        <td>实现每日报告生成的定时任务</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Slide 12: AutoGen Studio vs Framework -->
+        <div class="slide">
+            <h2>🎨 可视化 vs 💻 生产代码</h2>
+            <div class="two-column-layout">
+                <div>
+                    <h3>🎨 可视化阶段：AutoGen Studio</h3>
+                    <p>适合快速原型、教学与演示。</p>
+                    <ul class="pro">
+                        <li>直观易懂，拖拽定义 Agent 与逻辑。</li>
+                        <li>一键生成 Python 项目骨架。</li>
+                        <li>极大降低了多 Agent 系统入门门槛。</li>
+                    </ul>
+                    <ul class="con">
+                        <li>知识库 (RAG) 集成较弱。</li>
+                        <li>复杂的协作逻辑和自定义工具受限。</li>
+                        <li>不适合直接用于生产环境部署。</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>💻 生产阶段：AutoGen 框架</h3>
+                    <p>适合构建可扩展、可部署的生产级应用。</p>
+                    <ul class="pro">
+                        <li>用 Python 代码直接定义，灵活性极高。</li>
+                        <li>可深度整合数据层、调度模块和自定义工具。</li>
+                        <li>支持通过 Docker 进行容器化部署。</li>
+                        <li>完全掌控 Agent 行为和协作流程。</li>
+                    </ul>
+                    <ul class="con">
+                        <li>有一定学习曲线，需要编码能力。</li>
+                        <li>开发调试相对 Studio 更复杂。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 3 Title -->
+        <div class="slide section-title" style="justify-content: center;">
+            <h2>三、怎么从 0 到 1 构建 MVP</h2>
+            <p>用 Gemini 共创产品，用 AutoGen 实现落地</p>
+        </div>
+        
+        <!-- Slide 13: Co-creation Chain -->
+        <div class="slide">
+            <h2>📈 AI 共创链路：从想法到代码</h2>
+            <p>我们与 Gemini (或任何强大的 LLM) 的协作遵循一个清晰的、递进的链路。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>阶段</th>
+                        <th>核心目标</th>
+                        <th>关键输出物</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1. 概念定义</strong></td>
+                        <td>与 AI 对话，明确产品需求、目标用户和核心功能</td>
+                        <td><strong>产品需求文档 (PRD)</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>2. 技术规划</strong></td>
+                        <td>让 AI 基于 PRD 生成技术选型和系统架构文档</td>
+                        <td><strong>系统设计文档 (System Design)</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>3. 代码生成</strong></td>
+                        <td>让 AI 将设计文档转化为结构化的、可执行的开发指令</td>
+                        <td><strong>超级 Prompt (for Cursor/Copilot)</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>4. 调优迭代</strong></td>
+                        <td>在 AI 生成的代码基础上，进行调试、优化和功能迭代</td>
+                        <td><strong>可运行的 MVP v1.0, v2.0...</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>5. 调优迭代</strong></td>
+                        <td>在 AI 生成的代码基础上，进行调试、优化和功能迭代</td>
+                        <td><strong>可运行的 MVP v1.0, v2.0...</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="summary-box">
+                <blockquote>
+                    “AI 不是被动执行的工具，而是主动参与的共同开发者。”<br>
+                    <span>人类定义高层结构与目标，AI 负责填充实现细节。</span>
+                </blockquote>
+            </div>
+        </div>
+
+        <!-- Slide 14: Gemini Round 1 -->
+        <div class="slide">
+            <h2>💬 共创案例 1：提出愿景，生成 PRD</h2>
+            <p><strong>你的角色：</strong>产品经理</p>
+            <p><strong>第一轮对话目标：</strong>将模糊的想法具体化为一份产品需求文档。</p>
+            <pre style="font-size: 0.8rem;"># 你的 Prompt (摘要)
+你是一个资深产品经理，正在设计一个 Web3 行业的 "AI 秘书" 产品。
+需求：通过一人团队模式 (多 Agent)，实现新闻爬取、分析总结、智能问答、价值推荐等功能。
+技术：暂定 AutoGen。
+思考：对于新手用户还有哪些实用功能？客户端还是网页端好？比较利弊。
+最后，请根据以上讨论，出具一份完善的 PRD。
+            </pre>
+            <div style="margin-top:20px; padding: 15px; background: #2a2a2a; border-radius: 5px;">
+                <p style="margin:0; font-size: 1.2rem;">📘 <strong>Gemini 输出成果：</strong></p>
+                <p style="margin:0; font-size: 1.4rem; color: var(--primary-color);">一份包含目标用户、功能列表、非功能需求和产品形态建议的详细 PRD 文档。</p>
+            </div>
+        </div>
+        
+        <!-- Slide 15: Gemini Round 2 & 3 -->
+        <div class="slide">
+            <h2>💬 共创案例 2 &amp; 3：生成技术方案</h2>
+            <p><strong>你的角色：</strong>技术负责人 / 架构师</p>
+            <p><strong>目标：</strong>将 PRD 翻译成可执行的技术蓝图。</p>
+            
+            <h3 style="color: var(--secondary-color); margin-top: 20px;">第 2 轮：技术选型与依赖</h3>
+            <pre style="font-size: 0.8rem;">你: 针对上一份 PRD，出具一份完整的技术选型文档，并生成 requirements.txt。</pre>
+            <p>📘 <strong>Gemini 输出：</strong> <code>Python + AutoGen + LlamaIndex + ChromaDB + Streamlit...</code> 并生成了完整的 <code>requirements.txt</code> 文件。</p>
+
+            <h3 style="color: var(--secondary-color); margin-top: 20px;">第 3 轮：系统架构设计</h3>
+            <pre style="font-size: 0.8rem;">你: 作为资深技术架构师，请给我一份完整的开发文档，包含角色定义、数据流图、模块依赖和一步步的操作手册。</pre>
+            <p>📘 <strong>Gemini 输出：</strong> 包含四 Agent 架构图、数据流说明、文件结构建议的系统设计文档。</p>
+        </div>
+
+        <!-- Slide 16: Gemini Round 4 -->
+        <div class="slide">
+            <h2>💬 共创案例 4：生成终极开发 Prompt</h2>
+            <p><strong>你的角色：</strong>项目经理 / 主程</p>
+            <p><strong>目标：</strong>创建一条能让 AI 编码助手 (如 Cursor) 直接生成整个项目骨架的“超级指令”。</p>
+            <pre style="font-size: 0.8rem; height: 350px; overflow-y: auto;"># 你的 Prompt (结构预览)
+TO: Cursor/AI 编码助手
+
+目标：基于上述《项目说明文档》，从零开始生成 Web3 AI 秘书 MVP 项目的所有文件代码。
+
+请严格按照以下步骤，生成每个文件的完整代码。
+
+步骤 A：生成项目结构、i18n 核心与配置文件
+指令：请生成以下文件的完整内容。
+- requirements.txt
+- .env
+- i18n_utils.py
+- db_models.py
+- rag_setup.py
+
+步骤 B：RAG 工具箱、采集与调度器实现
+指令：请生成以下文件的完整内容。
+- agent_tools.py
+- crawler.py
+- scheduler.py
+...
+步骤 C：Agent 协作核心实现
+...
+步骤 D：Streamlit UI 与 UX 最终实现
+...
+步骤 E：容器化与多语言文件
+...
+            </pre>
+            <div style="margin-top:15px; padding: 15px; background: #2a2a2a; border-radius: 5px;">
+                <p style="margin:0; font-size: 1.2rem;">📘 <strong>输出成果：</strong></p>
+                <p style="margin:0; font-size: 1.4rem; color: var(--primary-color);">一条可直接复制到 Cursor 中，一键生成完整项目代码的“超级 Prompt”。</p>
+            </div>
+        </div>
+
+        <!-- Slide 17: Implementation -->
+        <div class="slide">
+            <h2>🔨 3.5 落地阶段：快速搭建 MVP</h2>
+            <ol style="font-size: 1.5rem; padding-left: 30px;">
+                <li style="margin-bottom: 30px; padding-left: 10px;"> 将 Gemini 生成的“超级 Prompt” 完整复制到 Cursor (或其他 AI 编码工具) 的聊天框中。</li>
+                <li style="margin-bottom: 30px; padding-left: 10px;"> AI 编码助手开始根据指令，逐一生成项目所需的所有文件和代码。</li>
+                <li style="margin-bottom: 30px; padding-left: 10px;"> 进行微调、安装依赖、运行程序。</li>
+                <li style="margin-bottom: 30px; padding-left: 10px;"> 优化、调试和测试。</li>
+            </ol>
+            
+            <div class="summary-box" style="display: flex; justify-content: space-around; text-align: center;">
+                <div>
+                    <p style="font-size: 1.2rem; color: #aaa; margin: 0;">⏱️ <strong>投入时间</strong></p>
+                    <p style="font-size: 2.5rem; color: var(--primary-color); margin: 5px 0 0 0;">~ 2-3 天</p>
+                </div>
+                <div>
+                    <p style="font-size: 1.2rem; color: #aaa; margin: 0;">🎯 <strong>最终结果</strong></p>
+                    <p style="font-size: 2.5rem; color: var(--primary-color); margin: 5px 0 0 0;">一个完整可运行的 MVP</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Tips & Tricks -->
+        <div class="slide">
+            <h2>💡 3.6 与 AI 高效协作的技巧</h2>
+            <ul>
+                <li><strong>分阶段、递进式提问：</strong> 不要试图用一个庞大而模糊的问题解决所有事。从 PRD -&gt; 架构 -&gt; 代码，步步为营。</li>
+                <li><strong>明确角色与上下文：</strong> 在每次提问前，先用 "你是一个资深XX..." 来设定 AI 的角色，这能显著提升回答的专业性。</li>
+                <li><strong>指定输出格式：</strong> 明确要求 AI 以 Markdown 表格、JSON、代码块等格式输出，便于你解析和使用。</li>
+                <li><strong>迭代优化 Prompt：</strong> 把 Prompt 看作代码。第一次生成的可能不完美，通过不断迭代和修正 Prompt，你会得到越来越好的结果。</li>
+            </ul>
+            <div class="summary-box">
+                <blockquote>
+                    Prompt 就是新一代的“项目语言”。
+                    <span>它融合了产品设计、技术规范和开发指令。</span>
+                </blockquote>
+            </div>
+        </div>
+        
+        <!-- Slide 19: Reflection -->
+        <div class="slide">
+            <h2>⚠️ 3.7 反思：UI 框架与交互优化的“时间陷阱”</h2>
+            <div style="padding: 40px; text-align: center; font-size: 1.6rem; line-height: 1.8;">
+                <p>在 MVP 的早期阶段，我们发现一个常见的陷阱：</p>
+                <p style="color: #E57373; font-weight: bold; font-size: 2rem;">在 UI 和交互细节上投入了过多时间。</p>
+                <p>例如，纠结于使用 Streamlit、Gradio 还是自己写 React，花费大量精力去美化界面。</p>
+                <p style="color: var(--primary-color); margin-top: 40px;"><strong>核心教训：</strong>早期 MVP 的重点是验证核心的 <strong>AI 协作逻辑</strong> 和 <strong>业务价值</strong>，而不是追求完美的 UI。选择最快的工具（如 Streamlit）实现基本功能即可。</p>
+            </div>
+        </div>
+
+        <!-- Slide 20: Takeaways -->
+        <div class="slide">
+            <h2>🌈 3.8 思考与收获</h2>
+            <ul>
+                <li><strong>1人团队的核心能力：</strong> 不再是纯粹的编码能力，而是定义问题、拆解任务和设计 <strong>AI 协作架构</strong> 的能力。</li>
+                <li><strong>Prompt 是新物种：</strong> 一个好的 Prompt 是“产品设计 + 工程规范”的融合体，是人与 AI 协作的接口。</li>
+                <li><strong>思维转变至关重要：</strong> 必须从内心真正接受 AI 是你团队的一员，学会信任它、引导它、与它共创。</li>
+                <li><strong>聚焦核心价值：</strong> 在 MVP 阶段，要坚决抵制在非核心功能（尤其是 UI）上过度优化的诱惑，快速验证，快速迭代。</li>
+            </ul>
+        </div>
+
+        <!-- Slide 21: Conclusion -->
+        <div class="slide final-quote">
+            <blockquote>
+                未来的开发，<br>不再是一个人埋头写代码，<br>而是一个人，和一群 AI 一起创造。
+            </blockquote>
+        </div>
+        
+        <!-- Slide 22: Q&A -->
+        <div class="slide" style="justify-content: center; align-items: center; text-align: center;">
+            <h1 style="font-size: 6rem;">Q &amp; A</h1>
+            <p class="subtitle" style="font-size: 3rem; margin-top: 40px;">谢谢大家</p>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <span id="slide-counter">1 / 22</span>
+        <button id="prev-btn" class="nav-btn">‹ 上一页</button>
+        <button id="next-btn" class="nav-btn">下一页 ›</button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const slideCounter = document.getElementById('slide-counter');
+        
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+            });
+            slideCounter.textContent = `${index + 1} / ${totalSlides}`;
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === totalSlides - 1;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        }
+
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            }
+        });
+
+        // Initial setup
+        showSlide(currentSlide);
+    </script>
+
+
+
+</body></html>
